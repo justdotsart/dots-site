@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
+/* ----- Tema base (colores y fuentes) ----- */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Degradado espacial suave para el fondo */
+  --space-bg: radial-gradient(60% 60% at 50% 45%, #0b0b16 0%, #000 100%);
 }
 
 @theme inline {
@@ -19,8 +23,57 @@
   }
 }
 
+/* ----- Base ----- */
+html, body { min-height: 100%; }
+
 body {
-  background: var(--background);
+  /* usa tu fuente Geist (con fallback) */
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+               "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans",
+               "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Cuando NO usemos el fondo estrellado, aplica color plano */
+body:not(.starry-bg) {
+  background: var(--background);
+}
+
+/* ----- Fondo de estrellas sutil (forzado sobre el <body>) ----- */
+body.starry-bg {
+  /* fallback sólido */
+  background-color: #000 !important;
+
+  /* estrellas en mosaico + degradado base */
+  background-image:
+    radial-gradient(2px 2px at 20px 40px, rgba(255,255,255,.22) 50%, transparent 51%),
+    radial-gradient(1px 1px at 100px 80px, rgba(255,255,255,.18) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 150px 150px, rgba(255,255,255,.16) 50%, transparent 51%),
+    radial-gradient(1px 1px at 200px 120px, rgba(255,255,255,.20) 50%, transparent 51%),
+    radial-gradient(2px 2px at 90px 170px, rgba(255,255,255,.16) 50%, transparent 51%),
+    radial-gradient(1px 1px at 30px 160px, rgba(255,255,255,.17) 50%, transparent 51%),
+    radial-gradient(1px 1px at 130px 30px, rgba(255,255,255,.16) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 60px 120px, rgba(255,255,255,.16) 50%, transparent 51%),
+    radial-gradient(1px 1px at 170px 60px, rgba(255,255,255,.18) 50%, transparent 51%),
+    radial-gradient(1px 1px at 120px 190px, rgba(255,255,255,.14) 50%, transparent 51%),
+    radial-gradient(1px 1px at 10px 100px, rgba(255,255,255,.16) 50%, transparent 51%),
+    var(--space-bg) !important;
+
+  background-size:
+    200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px,
+    200px 200px, 200px 200px, 200px 200px, 200px 200px, 200px 200px,
+    200px 200px, auto !important;
+
+  background-repeat:
+    repeat, repeat, repeat, repeat, repeat,
+    repeat, repeat, repeat, repeat, repeat,
+    repeat, no-repeat !important;
+
+  background-attachment: fixed !important;
+}
+
+
+/* Utilidad opcional */
+@layer utilities {
+  .text-balance { text-wrap: balance; }
 }

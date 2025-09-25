@@ -37,7 +37,7 @@ export const metadata = {
       "1,100,000 PFPs. Born on Bitcoin. Moving endlessly across its node network.",
     images: [
       {
-        url: "/og.png", // coloca este archivo en /public (1200x630)
+        url: "/og.png",
         width: 1200,
         height: 630,
         alt: "DOTS — 1,100,000 PFPs on Bitcoin",
@@ -79,7 +79,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      {/* 👇 añadimos starry-bg aquí */}
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased starry-bg`}>
         {children}
 
         {/* JSON-LD Organization */}
@@ -91,7 +92,7 @@ export default function RootLayout({ children }) {
               "@type": "Organization",
               name: SITE_NAME,
               url: SITE_URL,
-              sameAs: ["https://x.com/TU_USUARIO"], // cambia TU_USUARIO
+              sameAs: ["https://x.com/justdots_art"],
               logo: `${SITE_URL}/icon.png`,
             }),
           }}

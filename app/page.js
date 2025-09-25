@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 /* ===== Ajustes rápidos ===== */
 const AUTO_INTERVAL_MS = 1800;        // velocidad auto-carrusel (ms entre pasos)
 const RESPECT_REDUCED_MOTION = false; // true: respeta prefers-reduced-motion
-const LOGO_CLASS = "h-18 w-auto";     // tamaño del logo (ej. h-12, h-14, h-16)
+const LOGO_CLASS = "h-20 w-auto md:h-24"; // h-18 no existe en Tailwind (usa h-20/h-24/etc)
 
 /* ===== Escalado pixel-art (DOTS 10x14) ===== */
 const NATIVE_W = 10;
@@ -13,7 +13,7 @@ const NATIVE_H = 14;
 const SCALE = 12; // 12 => 120x168
 
 /* ===== Thumbs reales en /public/dots/* ===== */
-// ✅ Genera /dots/1.png ... /dots/41.png automáticamente
+// Genera /dots/1.png ... /dots/41.png automáticamente
 const NUM_THUMBS = 41;
 const DOTS_THUMBS = Array.from({ length: NUM_THUMBS }, (_, i) => `/dots/${i + 1}.png`);
 
@@ -26,15 +26,18 @@ const PLACEHOLDER_DOTS = Array.from({ length: 24 }).map((_, i) => ({
 
 export default function DotsCosmicPoster() {
   const [lang, setLang] = useState("en");
-  const [mounted, setMounted] = useState(false); // evitar cualquier render client-only antes de hidratar
+  const [mounted, setMounted] = useState(false); // para evitar randomness antes de hidratar
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   return (
-    <main className="relative min-h-screen bg-black text-white overflow-hidden" suppressHydrationWarning>
-      {mounted && <Starfield />}
+    <main
+      className="relative min-h-screen text-white overflow-hidden starry-bg"
+      suppressHydrationWarning
+    >
+      {/* Fondo ahora es solo CSS: .starry-bg (definida en globals.css) */}
       <Header lang={lang} setLang={setLang} />
       <Hero lang={lang} />
       <KeyFacts lang={lang} />
@@ -43,72 +46,6 @@ export default function DotsCosmicPoster() {
       <Footer />
     </main>
   );
-}
-
-/* ========================= Starfield (fondo) ========================= */
-function Starfield() {
-  const canvasRef = useRef(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    let raf = 0;
-
-    function setSize() {
-      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      canvas.width = Math.floor(window.innerWidth * dpr);
-      canvas.height = Math.floor(window.innerHeight * dpr);
-      canvas.style.width = "100%";
-      canvas.style.height = "100%";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    setSize();
-    window.addEventListener("resize", setSize);
-
-    const STAR_COUNT = Math.min(600, Math.floor((window.innerWidth * window.innerHeight) / 3000));
-    const stars = Array.from({ length: STAR_COUNT }).map(() => ({
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      r: Math.random() * 1.2 + 0.2,
-      a: Math.random() * Math.PI * 2,
-      s: 0.003 + Math.random() * 0.004,
-    }));
-
-    function draw() {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-      const g = ctx.createRadialGradient(
-        window.innerWidth * 0.5, window.innerHeight * 0.45, 0,
-        window.innerWidth * 0.5, window.innerHeight * 0.5,
-        Math.max(window.innerWidth, window.innerHeight)
-      );
-      g.addColorStop(0, "#0b0b16");
-      g.addColorStop(1, "#000");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
-
-      ctx.globalCompositeOperation = "lighter";
-      for (const s of stars) {
-        s.a += s.s;
-        const twinkle = 0.5 + Math.sin(s.a) * 0.5;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r + twinkle * 0.6, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200,220,255,${0.12 + twinkle * 0.28})`;
-        ctx.fill();
-      }
-      ctx.globalCompositeOperation = "source-over";
-      raf = requestAnimationFrame(draw);
-    }
-
-    draw();
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", setSize);
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="absolute inset-0 -z-10" aria-hidden="true" />;
 }
 
 /* ========================= Header ========================= */
@@ -135,7 +72,6 @@ function Header({ lang, setLang }) {
     </header>
   );
 }
-
 
 function LangToggle({ lang, setLang }) {
   return (
@@ -184,19 +120,20 @@ function Hero({ lang }) {
   return (
     <section className="relative max-w-6xl mx-auto px-4 pt-16 md:pt-24 pb-12">
       <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
-        {/* Título se mantiene igual */}
         <>Every dot is a star. <span className="text-white/70">On Bitcoin.</span></>
       </h1>
 
-      {/* Subtexto (Opción 2) – más grande */}
+      {/* Subtexto (versión solicitada) – más grande */}
       <p className="mt-4 text-white/80 max-w-3xl text-lg md:text-xl">
         {lang === "es" ? (
           <>
-            <strong>1,100,000 criaturas. </strong>La colección de PFPs más grande de la historia. Nacidos en <strong>Bitcoin</strong>. Viajando eternamente por su red de nodos.
+            <strong>1,100,000 criaturas. </strong>La colección de PFPs más grande de la historia.
+            Nacidos en <strong>Bitcoin</strong>. Viajando eternamente por su red de nodos.
           </>
         ) : (
           <>
-            <strong>1,100,000 creatures. </strong>Biggest PFP collection ever. Born on <strong>Bitcoin</strong>. Moving endlessly across its node network.
+            <strong>1,100,000 creatures. </strong>The biggest PFP collection ever.
+            Born on <strong>Bitcoin</strong>. Moving endlessly across its node network.
           </>
         )}
       </p>
@@ -215,7 +152,6 @@ function Hero({ lang }) {
   );
 }
 
-
 /* ========================= Key Facts ========================= */
 function KeyFacts({ lang }) {
   const items = useMemo(
@@ -233,7 +169,10 @@ function KeyFacts({ lang }) {
     <section id="facts" className="max-w-6xl mx-auto px-4 pb-10">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {items.map((it, idx) => (
-          <div key={`fact-${idx}`} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+          <div
+            key={`fact-${idx}`}
+            className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center"
+          >
             <div className="text-xs uppercase tracking-widest text-white/60">{it.k}</div>
             <div className="mt-1 text-2xl font-bold">{it.v}</div>
           </div>
@@ -358,7 +297,11 @@ function MiniGallery({ lang }) {
         </div>
       </div>
 
-      <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div
+        className="relative"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
         {/* Botones (desktop) */}
         <button
           type="button"
@@ -378,7 +321,10 @@ function MiniGallery({ lang }) {
         </button>
 
         {/* Track */}
-        <div ref={listRef} className="overflow-x-auto snap-x snap-mandatory pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div
+          ref={listRef}
+          className="overflow-x-auto snap-x snap-mandatory pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           <div ref={trackRef} data-track className="flex gap-3 pr-6">
             {loopItems.map((item, idx) => (
               <div
@@ -388,7 +334,12 @@ function MiniGallery({ lang }) {
                 style={{ width: NATIVE_W * SCALE + 16, height: NATIVE_H * SCALE + 16 }}
               >
                 {typeof item === "string" ? (
-                  <Thumb src={item} alt={`DOT #${(idx % baseLen) + 1}`} width={NATIVE_W * SCALE} height={NATIVE_H * SCALE} />
+                  <Thumb
+                    src={item}
+                    alt={`DOT #${(idx % baseLen) + 1}`}
+                    width={NATIVE_W * SCALE}
+                    height={NATIVE_H * SCALE}
+                  />
                 ) : (
                   <PixelDisc hue={item.hue} seed={item.seed} />
                 )}
@@ -457,7 +408,7 @@ function CTASection({ lang }) {
 
         <div className="mt-5 flex flex-wrap justify-center gap-3">
           <a
-            href="https://x.com/justdots_art"   // <-- pon aquí tu URL real
+            href="https://x.com/justdots_art"
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90"
@@ -469,7 +420,6 @@ function CTASection({ lang }) {
     </section>
   );
 }
-
 
 function Footer() {
   return (
