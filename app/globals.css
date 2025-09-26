@@ -77,3 +77,61 @@ body.starry-bg {
 @layer utilities {
   .text-balance { text-wrap: balance; }
 }
+
+/* DOTS — sweepstakes block (adaptado al theme) */
+.dots-sweepstakes {
+  --card-bg: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  background: var(--card-bg);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  color: var(--foreground);
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+/* Ajustes específicos para modo claro */
+@media (prefers-color-scheme: light) {
+  .dots-sweepstakes {
+    --card-bg: linear-gradient(135deg, rgba(0,0,0,0.03), rgba(0,0,0,0.01));
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+}
+
+/* Tipografía y disposición interna */
+.dots-sweepstakes h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: .5rem;
+  letter-spacing: .3px;
+}
+.dots-sweepstakes p.lead {
+  margin: 0 0 1rem;
+  line-height: 1.45;
+}
+.dots-sweepstakes ul {
+  margin: .5rem auto 0;
+  padding-left: 1.05rem;
+  text-align: left;
+  max-width: 42rem;
+  line-height: 1.6;
+}
+.dots-sweepstakes .cta {
+  margin-top: 1rem;
+  font-weight: 800;
+  font-size: 1.01rem;
+}
+
+/* Pixel-art scaling helpers para DOT images */
+.dot-pixel {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  -ms-interpolation-mode: nearest-neighbor; /* IE */
+}
+
+/* Tamaño “no-bajoneado” en retina si no se provee 2x: fuerza uso de nearest-neighbor */
+.dot-pixel {
+  image-rendering: crisp-edges;
+}

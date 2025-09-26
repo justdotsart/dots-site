@@ -3,43 +3,128 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /* ===== Ajustes rápidos ===== */
-const AUTO_INTERVAL_MS = 1800;        // velocidad auto-carrusel (ms entre pasos)
-const RESPECT_REDUCED_MOTION = false; // true: respeta prefers-reduced-motion
-const LOGO_CLASS = "h-20 w-auto md:h-24"; // h-18 no existe en Tailwind (usa h-20/h-24/etc)
+const AUTO_INTERVAL_MS = 1800;
+const RESPECT_REDUCED_MOTION = false;
+const LOGO_CLASS = "h-20 w-auto md:h-24";
 
 /* ===== Escalado pixel-art (DOTS 10x14) ===== */
 const NATIVE_W = 10;
 const NATIVE_H = 14;
-const SCALE = 12; // 12 => 120x168
+const SCALE = 12; // informativo
 
 /* ===== Thumbs reales en /public/dots/* ===== */
-// Genera /dots/1.png ... /dots/41.png automáticamente
 const NUM_THUMBS = 41;
 const DOTS_THUMBS = Array.from({ length: NUM_THUMBS }, (_, i) => `/dots/${i + 1}.png`);
 
-/* ===== Placeholders deterministas (sin Math.random para evitar hydration mismatch) ===== */
+/* ===== Placeholders deterministas ===== */
 const PLACEHOLDER_DOTS = Array.from({ length: 24 }).map((_, i) => ({
   id: i + 1,
   hue: (i * 137) % 360,
   seed: ((i * 9301) % 233280) / 233280,
 }));
 
+/* ===== Conjuntos controlables para evitar duplicados =====
+   Cámbialos aquí si quieres otras imágenes arriba/abajo.
+*/
+const TOP_DOT_IDS = [1, 2, 3, 4, 5, 6, 7, 8]; // los 8 del hero (derecha)
+const DESIRED_BOTTOM_IDS = [10, 11, 12]; // preferencia para los 3 de sweepstakes
+
+// asegura que los ids de abajo no repitan con los de arriba; si hay solapamiento,
+// completa con los siguientes ids disponibles (1..NUM_THUMBS)
+function computeBottomIds(topIds = [], desired = [], total = NUM_THUMBS) {
+  const used = new Set(topIds);
+  const result = [];
+  for (const id of desired) {
+    if (!used.has(id) && id >= 1 && id <= total) result.push(id);
+  }
+  // rellenar si hizo falta
+  for (let i = 1; i <= total && result.length < desired.length; i++) {
+    if (!used.has(i) && !result.includes(i)) result.push(i);
+  }
+  return result.slice(0, desired.length);
+}
+
+const BOTTOM_DOT_IDS = computeBottomIds(TOP_DOT_IDS, DESIRED_BOTTOM_IDS, NUM_THUMBS);
+
+/* ========================= Canvas-based DotImage =========================
+   Dibuja la imagen en un <canvas> con imageSmoothingEnabled = false para escalado "nítido/pixel-perfect".
+   Props:
+    - src
+    - scale (opcional, entero)
+    - targetWidth (opcional, px) -> calcula un scale entero cercano
+    - alt, className
+*/
+function DotImage({ src = "/dots/1.png", scale, targetWidth, alt = "", className = "" }) {
+  const canvasRef = useRef(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const img = new Image();
+    img.src = src;
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (cancelled) return;
+      const iw = img.naturalWidth || img.width || 1;
+      const ih = img.naturalHeight || img.height || 1;
+      let useScale = 1;
+      if (typeof scale === "number" && scale >= 1) {
+        useScale = Math.max(1, Math.floor(scale));
+      } else if (targetWidth && iw > 0) {
+        useScale = Math.max(1, Math.round(targetWidth / iw));
+      }
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvas.width = iw * useScale;
+      canvas.height = ih * useScale;
+      canvas.style.width = `${canvas.width}px`;
+      canvas.style.height = `${canvas.height}px`;
+      const ctx = canvas.getContext("2d");
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      setReady(true);
+    };
+    img.onerror = (e) => {
+      if (cancelled) return;
+      setReady(false);
+      console.warn("DotImage failed to load:", src, e);
+    };
+    return () => {
+      cancelled = true;
+    };
+  }, [src, scale, targetWidth]);
+
+  const ariaHidden = alt ? undefined : true;
+
+  return (
+    <canvas
+      ref={canvasRef}
+      role={alt ? "img" : undefined}
+      aria-hidden={ariaHidden}
+      aria-label={alt || undefined}
+      className={className}
+      style={{ display: "inline-block", verticalAlign: "middle" }}
+    />
+  );
+}
+
 export default function DotsCosmicPoster() {
   const [lang, setLang] = useState("en");
-  const [mounted, setMounted] = useState(false); // para evitar randomness antes de hidratar
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   return (
-    <main
-      className="relative min-h-screen text-white overflow-hidden starry-bg"
-      suppressHydrationWarning
-    >
-      {/* Fondo ahora es solo CSS: .starry-bg (definida en globals.css) */}
+    <main className="relative min-h-screen text-white overflow-hidden starry-bg" suppressHydrationWarning>
       <Header lang={lang} setLang={setLang} />
       <Hero lang={lang} />
+
+      {/* sweepstakes block justo debajo del Hero */}
+      <DotsSweepstakes lang={lang} />
+
       <KeyFacts lang={lang} />
       {mounted && <MiniGallery lang={lang} />}
       <CTASection lang={lang} />
@@ -56,8 +141,6 @@ function Header({ lang, setLang }) {
         <a href="#" className="flex items-center gap-3">
           <Logo />
         </a>
-
-        {/* Nav eliminado */}
 
         <div className="flex items-center gap-3">
           <a
@@ -85,7 +168,7 @@ function LangToggle({ lang, setLang }) {
   );
 }
 
-// Logo grande (usa /public/logo.png o /public/logo.svg)
+// Logo
 function Logo() {
   const CANDIDATES = ["/logo.png", "/logo.svg", "/logo.PNG", "/logo.webp"];
   const [i, setI] = useState(0);
@@ -115,16 +198,24 @@ function Logo() {
   );
 }
 
-/* ========================= Hero ========================= */
+/* ========================= Hero (8 dots aligned right, closer to header) */
 function Hero({ lang }) {
   return (
-    <section className="relative max-w-6xl mx-auto px-4 pt-16 md:pt-24 pb-12">
-      <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
-        <>Every dot is a star. <span className="text-white/70">On Bitcoin.</span></>
+    // reducimos un poco el padding-top para compactar zona del header
+    <section className="relative max-w-6xl mx-auto px-4 pt-12 md:pt-16 pb-12">
+      {/* 8 DOTs decorativos alineados a la derecha, menos espacio con header */}
+      <div className="flex justify-end items-center gap-2 mb-10 -mt-12" aria-hidden>
+        {TOP_DOT_IDS.map((i) => (
+          // targetWidth 48 para mantener mismo tamaño que antes (aprox w-12)
+          <DotImage key={i} src={`/dots/${i}.png`} targetWidth={48} />
+        ))}
+      </div>
+
+      <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
+        Every dot is a star. <span className="text-white/70">On Bitcoin.</span>
       </h1>
 
-      {/* Subtexto (versión solicitada) – más grande */}
-      <p className="mt-4 text-white/80 max-w-3xl text-lg md:text-xl">
+      <p className="mt-4 text-white/80 max-w-3xl text-xl md:text-2xl">
         {lang === "es" ? (
           <>
             <strong>1,100,000 criaturas. </strong>La colección de PFPs más grande de la historia.
@@ -139,12 +230,7 @@ function Hero({ lang }) {
       </p>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <a
-          id="mint"
-          href="#"
-          className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90"
-          aria-disabled
-        >
+        <a id="mint" href="#" className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90" aria-disabled>
           {lang === "es" ? "Mint (pronto)" : "Mint (soon)"}
         </a>
       </div>
@@ -160,7 +246,7 @@ function KeyFacts({ lang }) {
       { k: lang === "es" ? "Seres" : "Types", v: "10" },
       { k: lang === "es" ? "Rasgos" : "Traits", v: lang === "es" ? "Muchos" : "A lot" },
       { k: lang === "es" ? "Red" : "Network", v: "Bitcoin" },
-      { k: "Wen", v: "Soon" }, // meme
+      { k: "Wen", v: "Soon" },
     ],
     [lang]
   );
@@ -169,12 +255,9 @@ function KeyFacts({ lang }) {
     <section id="facts" className="max-w-6xl mx-auto px-4 pb-10">
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {items.map((it, idx) => (
-          <div
-            key={`fact-${idx}`}
-            className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center"
-          >
+          <div key={`fact-${idx}`} className="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
             <div className="text-xs uppercase tracking-widest text-white/60">{it.k}</div>
-            <div className="mt-1 text-2xl font-bold">{it.v}</div>
+            <div className="mt-1 text-3xl md:text-4xl font-bold">{it.v}</div>
           </div>
         ))}
       </div>
@@ -182,7 +265,7 @@ function KeyFacts({ lang }) {
   );
 }
 
-/* ========================= MiniGallery (random + autoplay + botones) ========================= */
+/* ========================= MiniGallery (sin cambios) */
 function Thumb({ src, alt, width = 160, height = 224 }) {
   const [ok, setOk] = useState(true);
   const [currentSrc, setCurrentSrc] = useState(src);
@@ -209,12 +292,11 @@ function Thumb({ src, alt, width = 160, height = 224 }) {
 
 function MiniGallery({ lang }) {
   const baseItems = DOTS_THUMBS.length ? DOTS_THUMBS : PLACEHOLDER_DOTS;
-  const [items, setItems] = useState([]); // randomized once
+  const [items, setItems] = useState([]);
   const listRef = useRef(null);
   const trackRef = useRef(null);
   const [paused, setPaused] = useState(false);
 
-  // Randomize order on mount (solo en cliente)
   useEffect(() => {
     const arr = [...baseItems];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -222,14 +304,13 @@ function MiniGallery({ lang }) {
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     setItems(arr);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const renderArr = items.length ? items : baseItems;
-  const loopItems = [...renderArr, ...renderArr]; // duplicado para loop
+  const loopItems = [...renderArr, ...renderArr];
   const baseLen = renderArr.length || 1;
 
-  const cardW = NATIVE_W * SCALE + 16; // ancho interior
+  const cardW = NATIVE_W * SCALE + 16;
   const computeStep = () => {
     const list = listRef.current;
     if (!list) return cardW + 12;
@@ -240,18 +321,10 @@ function MiniGallery({ lang }) {
     return (firstCard?.getBoundingClientRect().width || cardW) + gap;
   };
 
-  // Auto-play horizontal scroll
   useEffect(() => {
     if (!listRef.current) return;
-
     if (RESPECT_REDUCED_MOTION) {
-      if (
-        typeof window !== "undefined" &&
-        window.matchMedia &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches
-      ) {
-        return;
-      }
+      if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     }
 
     const list = listRef.current;
@@ -277,7 +350,6 @@ function MiniGallery({ lang }) {
     };
   }, [paused]);
 
-  // Controles manuales
   const scrollByStep = (dir) => {
     const list = listRef.current;
     if (!list) return;
@@ -289,57 +361,27 @@ function MiniGallery({ lang }) {
   return (
     <section id="gallery" className="max-w-6xl mx-auto px-4 pb-14">
       <div className="flex items-end justify-between mb-4">
-        <h2 className="text-xl md:text-2xl font-semibold">
-          {lang === "es" ? "Algunos dots" : "Some dots"}
-        </h2>
-        <div className="text-sm text-white/70">
-          {lang === "es" ? "Auto-carrusel • orden aleatorio" : "Auto-carousel • random order"}
-        </div>
+        <h2 className="text-xl md:text-2xl font-semibold">{lang === "es" ? "Algunos dots" : "Some dots"}</h2>
+        <div className="text-sm text-white/70">{lang === "es" ? "Auto-carrusel • orden aleatorio" : "Auto-carousel • random order"}</div>
       </div>
 
-      <div
-        className="relative"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
-        {/* Botones (desktop) */}
-        <button
-          type="button"
-          aria-label={lang === "es" ? "Anterior" : "Previous"}
-          onClick={() => scrollByStep("prev")}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 ml-[-6px] rounded-full border border-white/20 bg-black/40 backdrop-blur px-3 py-3 hover:bg-black/60 hidden sm:inline-flex"
-        >
+      <div className="relative" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+        <button type="button" aria-label={lang === "es" ? "Anterior" : "Previous"} onClick={() => scrollByStep("prev")}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 ml-[-6px] rounded-full border border-white/20 bg-black/40 backdrop-blur px-3 py-3 hover:bg-black/60 hidden sm:inline-flex">
           <ArrowLeftIcon />
         </button>
-        <button
-          type="button"
-          aria-label={lang === "es" ? "Siguiente" : "Next"}
-          onClick={() => scrollByStep("next")}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 mr-[-6px] rounded-full border border-white/20 bg-black/40 backdrop-blur px-3 py-3 hover:bg-black/60 hidden sm:inline-flex"
-        >
+        <button type="button" aria-label={lang === "es" ? "Siguiente" : "Next"} onClick={() => scrollByStep("next")}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 mr-[-6px] rounded-full border border-white/20 bg-black/40 backdrop-blur px-3 py-3 hover:bg-black/60 hidden sm:inline-flex">
           <ArrowRightIcon />
         </button>
 
-        {/* Track */}
-        <div
-          ref={listRef}
-          className="overflow-x-auto snap-x snap-mandatory pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
+        <div ref={listRef} className="overflow-x-auto snap-x snap-mandatory pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div ref={trackRef} data-track className="flex gap-3 pr-6">
             {loopItems.map((item, idx) => (
-              <div
-                key={`card-${idx}`}
-                data-card
-                className="snap-start shrink-0 rounded-2xl border border-white/10 bg-white/5 p-2 flex items-center justify-center"
-                style={{ width: NATIVE_W * SCALE + 16, height: NATIVE_H * SCALE + 16 }}
-              >
+              <div key={`card-${idx}`} data-card className="snap-start shrink-0 rounded-2xl border border-white/10 bg-white/5 p-2 flex items-center justify-center"
+                   style={{ width: NATIVE_W * SCALE + 16, height: NATIVE_H * SCALE + 16 }}>
                 {typeof item === "string" ? (
-                  <Thumb
-                    src={item}
-                    alt={`DOT #${(idx % baseLen) + 1}`}
-                    width={NATIVE_W * SCALE}
-                    height={NATIVE_H * SCALE}
-                  />
+                  <Thumb src={item} alt={`DOT #${(idx % baseLen) + 1}`} width={NATIVE_W * SCALE} height={NATIVE_H * SCALE} />
                 ) : (
                   <PixelDisc hue={item.hue} seed={item.seed} />
                 )}
@@ -352,6 +394,7 @@ function MiniGallery({ lang }) {
   );
 }
 
+/* ========================= Icons, pixel disc & sweepstakes (actualizado: 3 dots encima del texto) */
 function ArrowLeftIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -367,7 +410,6 @@ function ArrowRightIcon() {
   );
 }
 
-/* ========================= Placeholder disc (solo si faltan thumbs) ========================= */
 function PixelDisc({ hue, seed }) {
   const canvasRef = useRef(null);
   useEffect(() => {
@@ -392,29 +434,91 @@ function PixelDisc({ hue, seed }) {
   return <canvas ref={canvasRef} className="rounded-xl" aria-hidden="true" />;
 }
 
+/* ========================= DotsSweepstakes (actualizado: usa BOTTOM_DOT_IDS) */
+function DotsSweepstakes({ lang }) {
+  const isES = lang === "es";
+
+  if (isES) {
+    return (
+      <section className="max-w-6xl mx-auto px-4 pb-8">
+        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Mintea DOTS y participa en nuestro <span className="uppercase">GRAN SORTEO</span> — <span className="text-yellow-300 font-extrabold">¡Más de 3 BTC en premios! ¡¡¡300mil dólares!!!</span>
+          </h2>
+
+          {/* 3 DOTs pequeños centrados (usando BOTTOM_DOT_IDS para evitar repeticiones) */}
+          <div className="flex justify-center gap-4 mt-12 mb-2" aria-hidden>
+            {BOTTOM_DOT_IDS.map((i) => (
+              <DotImage key={`bot-${i}`} src={`/dots/${i}.png`} targetWidth={64} />
+            ))}
+          </div>
+
+          <p className="mt-12 text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+            Con <strong>DOTS</strong> no solo mintearás la colección NFT más grande de la historia (≈ 1.100.000 PFPs únicos); también entrarás automáticamente en varios sorteos con premios increíbles: BTCs, Ordinals destacados y más.
+          </p>
+
+          <ul className="mt-12 text-left max-w-3xl mx-auto space-y-3 text-base md:text-lg">
+            <li><strong>Al 20% del mint:</strong> rifaremos <strong>100 premios de 0.005 BTC</strong> cada uno.</li>
+            <li><strong>Al 50% del mint:</strong> rifaremos <strong>5 premios de 0.1 BTC</strong> cada uno, además de Ordinals de colecciones top.</li>
+            <li><strong>Al 100%:</strong> rifa final por <strong>1 BTC</strong>, más premios adicionales de 0.1 BTC y Ordinals importantes.</li>
+          </ul>
+
+          <p className="mt-12 font-extrabold text-white/100 text-lg md:text-xl">¡MÁS DE <span className="uppercase">$300,000</span> EN PREMIOS! No te quedes sin tu DOT — sé parte de la colección NFT más grande de la historia.</p>
+
+          <p className="mt-3 text-xs text-white/60">
+            Consulta <a href="/terms" className="underline">Términos del Sorteo</a> para detalles y requisitos.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="max-w-6xl mx-auto px-4 pb-8">
+      <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
+          Mint DOTS & Enter Our <span className="uppercase">BIG RAFFLE</span> — <span className="text-yellow-300 font-extrabold">Over 3 BTC in prizes! More than 300k USD!!</span>
+        </h2>
+
+        {/* 3 DOTs pequeños centrados (usando BOTTOM_DOT_IDS para evitar repeticiones) */}
+        <div className="flex justify-center gap-4 mt-12 mb-2" aria-hidden>
+          {BOTTOM_DOT_IDS.map((i) => (
+            <DotImage key={`bot-${i}`} src={`/dots/${i}.png`} targetWidth={64} />
+          ))}
+        </div>
+
+        <p className="mt-12 text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+          With <strong>DOTS</strong> you won’t just mint the largest NFT collection in history (~1,100,000 unique PFPs); you’ll also be automatically entered into multiple raffles with incredible prizes — BTCs, high-value Ordinals and surprises.
+        </p>
+
+        <ul className="mt-12 text-left max-w-3xl mx-auto space-y-3 text-base md:text-lg">
+          <li><strong>20% of the mint:</strong> we’ll raffle <strong>100 prizes of 0.005 BTC</strong> each.</li>
+          <li><strong>50% of the mint:</strong> we’ll raffle <strong>5 prizes of 0.1 BTC</strong> each, plus several top-tier Ordinals.</li>
+          <li><strong>100% completion:</strong> the final raffle for <strong>1 BTC</strong>, plus additional 0.1 BTC prizes and major Ordinals.</li>
+        </ul>
+
+        <p className="mt-12 font-extrabold text-white/100 text-lg md:text-xl">OVER <span className="uppercase">$300,000</span> IN PRIZES! Don’t miss your DOT — join the largest NFT collection in history.</p>
+
+        <p className="mt-3 text-xs text-white/60">
+          See <a href="/terms" className="underline">Raffles Terms</a> for full details.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 /* ========================= CTA & Footer ========================= */
 function CTASection({ lang }) {
   return (
     <section className="max-w-6xl mx-auto px-4 pb-20">
       <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
-        <h3 className="text-2xl md:text-3xl font-bold">
-          {lang === "es" ? "Únete a la órbita DOTS" : "Join the DOTS orbit"}
-        </h3>
-        <p className="text-white/80 mt-3 text-lg md:text-xl">
-          {lang === "es"
-            ? "Seguiremos publicando avances. Anunciaremos la fecha de mint público pronto."
-            : "We’ll keep sharing progress. Public mint date announced soon."}
+        <h3 className="text-3xl md:text-4xl font-bold">{lang === "es" ? "Únete a la órbita DOTS" : "Join the DOTS orbit"}</h3>
+        <p className="text-white/80 mt-3 text-lg md:text-2xl">
+          {lang === "es" ? "Seguiremos publicando avances. Anunciaremos la fecha de mint público pronto." : "We’ll keep sharing progress. Public mint date announced soon."}
         </p>
 
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <a
-            href="https://x.com/justdots_art"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90"
-          >
-            Twitter / X
-          </a>
+          <a href="https://x.com/justdots_art" target="_blank" rel="noopener noreferrer" className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90">Twitter / X</a>
         </div>
       </div>
     </section>
@@ -424,9 +528,7 @@ function CTASection({ lang }) {
 function Footer() {
   return (
     <footer className="border-t border-white/10 text-center text-xs text-white/60 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        © {new Date().getFullYear()} DOTS — Built on Bitcoin. All rights reserved.
-      </div>
+      <div className="max-w-6xl mx-auto px-4">© {new Date().getFullYear()} DOTS — Built on Bitcoin. All rights reserved.</div>
     </footer>
   );
 }
