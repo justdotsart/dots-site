@@ -7,6 +7,9 @@ const AUTO_INTERVAL_MS = 1800;
 const RESPECT_REDUCED_MOTION = false;
 const LOGO_CLASS = "h-20 w-auto md:h-24";
 
+/* ===== Link de mint (reemplaza por tu URL final) ===== */
+const MINT_URL = "https://inscribenow.io/collections/just-dots"; // <- cambia esto por tu link final
+
 /* ===== Escalado pixel-art (DOTS 10x14) ===== */
 const NATIVE_W = 10;
 const NATIVE_H = 14;
@@ -143,18 +146,24 @@ function Header({ lang, setLang }) {
         </a>
 
         <div className="flex items-center gap-3">
+          {/* Botón Mint DOTS — mismo estilo, abre el link final en nueva pestaña */}
           <a
-            href="#mint"
+            href={MINT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-2xl px-3 py-1.5 bg-white text-black text-sm font-semibold hover:bg-white/90"
+            aria-label="Mint DOTS"
           >
-            {lang === "es" ? "Mint pronto" : "Mint soon"}
+            Mint DOTS
           </a>
+
           <LangToggle lang={lang} setLang={setLang} />
         </div>
       </div>
     </header>
   );
 }
+
 
 function LangToggle({ lang, setLang }) {
   return (
@@ -230,10 +239,17 @@ function Hero({ lang }) {
       </p>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <a id="mint" href="#" className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90" aria-disabled>
-          {lang === "es" ? "Mint (pronto)" : "Mint (soon)"}
-        </a>
-      </div>
+  <a
+    id="mint"
+    href={MINT_URL}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90"
+    aria-label="Mint DOTS"
+  >
+    Mint DOTS
+  </a>
+</div>
     </section>
   );
 }
@@ -512,18 +528,49 @@ function CTASection({ lang }) {
   return (
     <section className="max-w-6xl mx-auto px-4 pb-20">
       <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
-        <h3 className="text-3xl md:text-4xl font-bold">{lang === "es" ? "Únete a la órbita DOTS" : "Join the DOTS orbit"}</h3>
+        <h3 className="text-3xl md:text-4xl font-bold">
+          {lang === "es" ? "Únete a la órbita DOTS" : "Join the DOTS orbit"}
+        </h3>
         <p className="text-white/80 mt-3 text-lg md:text-2xl">
-          {lang === "es" ? "Seguiremos publicando avances. Anunciaremos la fecha de mint público pronto." : "We’ll keep sharing progress. Public mint date announced soon."}
+          {lang === "es"
+            ? "Seguiremos publicando avances. Anunciaremos la fecha de mint público pronto."
+            : "We’ll keep sharing progress. Public mint date announced soon."}
         </p>
 
         <div className="mt-5 flex flex-wrap justify-center gap-3">
-          <a href="https://x.com/justdots_art" target="_blank" rel="noopener noreferrer" className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90">Twitter / X</a>
+          <a
+            href="https://x.com/justdots_art"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90 flex items-center gap-2"
+            aria-label="Follow DOTS on X / Twitter"
+          >
+            {/* Twitter / X text */}
+            Twitter / X
+          </a>
+
+          {/* Telegram button: reemplaza el href por el enlace de tu grupo */}
+          <a
+            href="https://t.me/justdotsart" /* <- pon aquí tu enlace real */
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90 flex items-center gap-2"
+            aria-label="Join DOTS on Telegram"
+          >
+            {/* Telegram icon (SVG, inline para no depender de assets) */}
+            <svg width="18" height="18" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M120 0C53.73 0 0 53.73 0 120s53.73 120 120 120 120-53.73 120-120S186.27 0 120 0z" fill="#0088cc"/>
+              <path d="M178.2 70.7c-1.8 8.4-8.4 39.6-11.4 53.1-2.4 11.1-7.8 15.6-14.4 15.3-7.2-.3-10.8-4.8-19.2-9.3-17.4-9.6-28.8-15.3-41.4-23.4-8.1-5.1-7.8-8.1 1.8-12 3.9-1.8 16.2-5.4 26.1-8.1 9.9-2.7 26.1-7.2 38.4-11.4 2.7-1 5.4-.6 7.8 2.1 2.4 2.7 1.8 5.4.3 9.0z" fill="#fff"/>
+            </svg>
+
+            <span className="whitespace-nowrap">{lang === "es" ? "Telegram" : "Telegram"}</span>
+          </a>
         </div>
       </div>
     </section>
   );
 }
+
 
 function Footer() {
   return (
