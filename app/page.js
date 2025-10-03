@@ -29,7 +29,7 @@ const PLACEHOLDER_DOTS = Array.from({ length: 24 }).map((_, i) => ({
 /* ===== Conjuntos controlables para evitar duplicados =====
    Cámbialos aquí si quieres otras imágenes arriba/abajo.
 */
-const TOP_DOT_IDS = [1, 2, 3, 4, 5, 6, 7, 8]; // los 8 del hero (derecha)
+const TOP_DOT_IDS = [1, 2, 3, 4, 5, 6]; // los 8 del hero (derecha)
 const DESIRED_BOTTOM_IDS = [10, 11, 12]; // preferencia para los 3 de sweepstakes
 
 // asegura que los ids de abajo no repitan con los de arriba; si hay solapamiento,
