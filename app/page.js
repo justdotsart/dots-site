@@ -459,7 +459,7 @@ function DotsSweepstakes({ lang }) {
       <section className="max-w-6xl mx-auto px-4 pb-8">
         <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
           <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Mintea DOTS y participa en nuestro <span className="uppercase">GRAN SORTEO</span> — <span className="text-yellow-300 font-extrabold">¡Más de 3 BTC en premios! ¡¡¡300mil dólares!!!</span>
+            Mintea DOTS y participa en nuestro <span className="uppercase">GRAN SORTEO</span> — <span className="text-yellow-300 font-extrabold">¡Más de 1 BTC en premios! ¡¡¡150mil dólares!!!</span>
           </h2>
 
           {/* 3 DOTs pequeños centrados (usando BOTTOM_DOT_IDS para evitar repeticiones) */}
@@ -474,9 +474,9 @@ function DotsSweepstakes({ lang }) {
           </p>
 
           <ul className="mt-12 text-left max-w-3xl mx-auto space-y-3 text-base md:text-lg">
-            <li><strong>Al 20% del mint:</strong> rifaremos <strong>100 premios de 0.005 BTC</strong> cada uno.</li>
-            <li><strong>Al 50% del mint:</strong> rifaremos <strong>5 premios de 0.1 BTC</strong> cada uno, además de Ordinals de colecciones top.</li>
-            <li><strong>Al 100%:</strong> rifa final por <strong>1 BTC</strong>, más premios adicionales de 0.1 BTC y Ordinals importantes.</li>
+            <li><strong>Al 20% del mint:</strong> rifaremos <strong>100 premios de 0.0025 BTC</strong> cada uno.</li>
+            <li><strong>Al 50% del mint:</strong> rifaremos <strong>5 premios de 0.05 BTC</strong> cada uno, además de Ordinals de colecciones top.</li>
+            <li><strong>Al 100%:</strong> rifa final por <strong>0.5 BTC</strong>, más premios adicionales de 0.05 BTC y Ordinals importantes.</li>
           </ul>
 
           <p className="mt-12 font-extrabold text-white/100 text-lg md:text-xl">¡MÁS DE <span className="uppercase">$300,000</span> EN PREMIOS! No te quedes sin tu DOT — sé parte de la colección NFT más grande de la historia.</p>
@@ -493,7 +493,7 @@ function DotsSweepstakes({ lang }) {
     <section className="max-w-6xl mx-auto px-4 pb-8">
       <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
         <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Mint DOTS & Enter Our <span className="uppercase">BIG RAFFLE</span> — <span className="text-yellow-300 font-extrabold">Over 3 BTC in prizes! More than 300k USD!!</span>
+          Mint DOTS & Enter Our <span className="uppercase">BIG RAFFLE</span> — <span className="text-yellow-300 font-extrabold">Over 1 BTC in prizes! More than 150k USD!!</span>
         </h2>
 
         {/* 3 DOTs pequeños centrados (usando BOTTOM_DOT_IDS para evitar repeticiones) */}
@@ -508,9 +508,9 @@ function DotsSweepstakes({ lang }) {
         </p>
 
         <ul className="mt-12 text-left max-w-3xl mx-auto space-y-3 text-base md:text-lg">
-          <li><strong>20% of the mint:</strong> we’ll raffle <strong>100 prizes of 0.005 BTC</strong> each.</li>
-          <li><strong>50% of the mint:</strong> we’ll raffle <strong>5 prizes of 0.1 BTC</strong> each, plus several top-tier Ordinals.</li>
-          <li><strong>100% completion:</strong> the final raffle for <strong>1 BTC</strong>, plus additional 0.1 BTC prizes and major Ordinals.</li>
+          <li><strong>20% of the mint:</strong> we’ll raffle <strong>100 prizes of 0.0025 BTC</strong> each.</li>
+          <li><strong>50% of the mint:</strong> we’ll raffle <strong>5 prizes of 0.05 BTC</strong> each, plus several top-tier Ordinals.</li>
+          <li><strong>100% completion:</strong> the final raffle for <strong>0.5 BTC</strong>, plus additional 0.05 BTC prizes and major Ordinals.</li>
         </ul>
 
         <p className="mt-12 font-extrabold text-white/100 text-lg md:text-xl">OVER <span className="uppercase">$300,000</span> IN PRIZES! Don’t miss your DOT — join the largest NFT collection in history.</p>

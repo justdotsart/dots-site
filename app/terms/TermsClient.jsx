@@ -71,9 +71,9 @@ export default function TermsClient() {
           <div className="bg-white/5 p-4 rounded-lg border border-white/6">
             <strong className="block mb-2">{isES ? "Hitos y premios" : "Milestones & prizes"}</strong>
             <ul className="list-disc pl-5 text-white/90 space-y-2">
-              <li>{isES ? "Al 20% del mint: rifaremos 100 premios de 0.005 BTC cada uno." : "At 20%: we’ll raffle 100 prizes of 0.005 BTC each."}</li>
-              <li>{isES ? "Al 50%: rifaremos 5 premios de 0.1 BTC cada uno + Ordinals seleccionados." : "At 50%: we’ll raffle 5 prizes of 0.1 BTC each + selected high-value Ordinals."}</li>
-              <li>{isES ? "Al 100%: rifa final por 1 BTC + premios adicionales de 0.1 BTC y Ordinals de alto valor." : "At 100% completion: the final raffle for 1 BTC + additional 0.1 BTC prizes and major Ordinals."}</li>
+              <li>{isES ? "Al 20% del mint: rifaremos 100 premios de 0.0025 BTC cada uno." : "At 20%: we’ll raffle 100 prizes of 0.0025 BTC each."}</li>
+              <li>{isES ? "Al 50%: rifaremos 5 premios de 0.05 BTC cada uno + Ordinals seleccionados." : "At 50%: we’ll raffle 5 prizes of 0.05 BTC each + selected high-value Ordinals."}</li>
+              <li>{isES ? "Al 100%: rifa final por 0.5 BTC + premios adicionales de 0.05 BTC y Ordinales de alto valor." : "At 100% completion: the final raffle for 0.5 BTC + additional 0.05 BTC prizes and major Ordinals."}</li>
             </ul>
           </div>
         </section>
