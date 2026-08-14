@@ -7,8 +7,8 @@ const AUTO_INTERVAL_MS = 1800;
 const RESPECT_REDUCED_MOTION = false;
 const LOGO_CLASS = "h-20 w-auto md:h-24";
 
-/* ===== Link de mint (reemplaza por tu URL final) ===== */
-const MINT_URL = "https://inscribenow.io/collections/just-dots"; // <- cambia esto por tu link final
+/* ===== Link oficial de la colección / mint ===== */
+const MINT_URL = "https://opensea.io/collection/just-dots-art-rh";
 
 /* ===== Escalado pixel-art (DOTS 10x14) ===== */
 const NATIVE_W = 10;
@@ -26,28 +26,8 @@ const PLACEHOLDER_DOTS = Array.from({ length: 24 }).map((_, i) => ({
   seed: ((i * 9301) % 233280) / 233280,
 }));
 
-/* ===== Conjuntos controlables para evitar duplicados =====
-   Cámbialos aquí si quieres otras imágenes arriba/abajo.
-*/
-const TOP_DOT_IDS = [1, 2, 3, 4, 5, 6]; // los 8 del hero (derecha)
-const DESIRED_BOTTOM_IDS = [10, 11, 12]; // preferencia para los 3 de sweepstakes
-
-// asegura que los ids de abajo no repitan con los de arriba; si hay solapamiento,
-// completa con los siguientes ids disponibles (1..NUM_THUMBS)
-function computeBottomIds(topIds = [], desired = [], total = NUM_THUMBS) {
-  const used = new Set(topIds);
-  const result = [];
-  for (const id of desired) {
-    if (!used.has(id) && id >= 1 && id <= total) result.push(id);
-  }
-  // rellenar si hizo falta
-  for (let i = 1; i <= total && result.length < desired.length; i++) {
-    if (!used.has(i) && !result.includes(i)) result.push(i);
-  }
-  return result.slice(0, desired.length);
-}
-
-const BOTTOM_DOT_IDS = computeBottomIds(TOP_DOT_IDS, DESIRED_BOTTOM_IDS, NUM_THUMBS);
+/* ===== DOTS visibles en el hero ===== */
+const TOP_DOT_IDS = [1, 2, 3, 4, 5, 6];
 
 /* ========================= Canvas-based DotImage =========================
    Dibuja la imagen en un <canvas> con imageSmoothingEnabled = false para escalado "nítido/pixel-perfect".
@@ -124,10 +104,6 @@ export default function DotsCosmicPoster() {
     <main className="relative min-h-screen text-white overflow-hidden starry-bg" suppressHydrationWarning>
       <Header lang={lang} setLang={setLang} />
       <Hero lang={lang} />
-
-      {/* sweepstakes block justo debajo del Hero */}
-      <DotsSweepstakes lang={lang} />
-
       <KeyFacts lang={lang} />
       {mounted && <MiniGallery lang={lang} />}
       <CTASection lang={lang} />
@@ -207,33 +183,31 @@ function Logo() {
   );
 }
 
-/* ========================= Hero (8 dots aligned right, closer to header) */
+/* ========================= Hero ========================= */
 function Hero({ lang }) {
   return (
-    // reducimos un poco el padding-top para compactar zona del header
     <section className="relative max-w-6xl mx-auto px-4 pt-12 md:pt-16 pb-12">
-      {/* 8 DOTs decorativos alineados a la derecha, menos espacio con header */}
       <div className="flex justify-end items-center gap-2 mb-10 -mt-12" aria-hidden>
         {TOP_DOT_IDS.map((i) => (
-          // targetWidth 48 para mantener mismo tamaño que antes (aprox w-12)
           <DotImage key={i} src={`/dots/${i}.png`} targetWidth={48} />
         ))}
       </div>
 
       <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
-        Every dot is a star. <span className="text-white/70">On Bitcoin.</span>
+        {lang === "es" ? "Cada dot es una estrella. " : "Every dot is a star. "}
+        <span className="text-white/70">{lang === "es" ? "En Robinhood." : "On Robinhood."}</span>
       </h1>
 
       <p className="mt-4 text-white/80 max-w-3xl text-xl md:text-2xl">
         {lang === "es" ? (
           <>
-            <strong>1,100,000 criaturas. </strong>La colección de PFPs más grande de la historia.
-            Nacidos en <strong>Bitcoin</strong>. Viajando eternamente por su red de nodos.
+            <strong>1.100.000 criaturas. </strong>La colección de PFPs más grande jamás creada.
+            Vive en <strong>Robinhood Chain</strong>. Mintea un DOT aleatorio por solo <strong>1 USD</strong>.
           </>
         ) : (
           <>
-            <strong>1,100,000 creatures. </strong>The biggest PFP collection ever.
-            Born on <strong>Bitcoin</strong>. Moving endlessly across its node network.
+            <strong>1,100,000 creatures. </strong>The biggest PFP collection ever created.
+            Living on <strong>Robinhood Chain</strong>. Mint a random DOT for just <strong>$1</strong>.
           </>
         )}
       </p>
@@ -261,8 +235,8 @@ function KeyFacts({ lang }) {
       { k: lang === "es" ? "Supply" : "Supply", v: "1,100,000" },
       { k: lang === "es" ? "Seres" : "Types", v: "10" },
       { k: lang === "es" ? "Rasgos" : "Traits", v: lang === "es" ? "Muchos" : "A lot" },
-      { k: lang === "es" ? "Red" : "Network", v: "Bitcoin" },
-      { k: "Wen", v: "Soon" },
+      { k: lang === "es" ? "Red" : "Network", v: "Robinhood" },
+      { k: lang === "es" ? "Precio" : "Price", v: "$1" },
     ],
     [lang]
   );
@@ -410,7 +384,7 @@ function MiniGallery({ lang }) {
   );
 }
 
-/* ========================= Icons, pixel disc & sweepstakes (actualizado: 3 dots encima del texto) */
+/* ========================= Icons & pixel disc ========================= */
 function ArrowLeftIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -450,79 +424,6 @@ function PixelDisc({ hue, seed }) {
   return <canvas ref={canvasRef} className="rounded-xl" aria-hidden="true" />;
 }
 
-/* ========================= DotsSweepstakes (actualizado: usa BOTTOM_DOT_IDS) */
-function DotsSweepstakes({ lang }) {
-  const isES = lang === "es";
-
-  if (isES) {
-    return (
-      <section className="max-w-6xl mx-auto px-4 pb-8">
-        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-            Mintea DOTS y participa en nuestro <span className="uppercase">GRAN SORTEO</span> — <span className="text-yellow-300 font-extrabold">¡Más de 1 BTC en premios! ¡¡¡150mil dólares!!!</span>
-          </h2>
-
-          {/* 3 DOTs pequeños centrados (usando BOTTOM_DOT_IDS para evitar repeticiones) */}
-          <div className="flex justify-center gap-4 mt-12 mb-2" aria-hidden>
-            {BOTTOM_DOT_IDS.map((i) => (
-              <DotImage key={`bot-${i}`} src={`/dots/${i}.png`} targetWidth={64} />
-            ))}
-          </div>
-
-          <p className="mt-12 text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
-            Con <strong>DOTS</strong> no solo mintearás la colección NFT más grande de la historia (≈ 1.100.000 PFPs únicos); también entrarás automáticamente en varios sorteos con premios increíbles: BTCs, Ordinals destacados y más.
-          </p>
-
-          <ul className="mt-12 text-left max-w-3xl mx-auto space-y-3 text-base md:text-lg">
-            <li><strong>Al 20% del mint:</strong> rifaremos <strong>100 premios de 0.0025 BTC</strong> cada uno.</li>
-            <li><strong>Al 50% del mint:</strong> rifaremos <strong>5 premios de 0.05 BTC</strong> cada uno, además de Ordinals de colecciones top.</li>
-            <li><strong>Al 100%:</strong> rifa final por <strong>0.5 BTC</strong>, más premios adicionales de 0.05 BTC y Ordinals importantes.</li>
-          </ul>
-
-          <p className="mt-12 font-extrabold text-white/100 text-lg md:text-xl">¡MÁS DE <span className="uppercase">$300,000</span> EN PREMIOS! No te quedes sin tu DOT — sé parte de la colección NFT más grande de la historia.</p>
-
-          <p className="mt-3 text-xs text-white/60">
-            Consulta <a href="/terms" className="underline">Términos del Sorteo</a> para detalles y requisitos.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="max-w-6xl mx-auto px-4 pb-8">
-      <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-6 md:p-10 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">
-          Mint DOTS & Enter Our <span className="uppercase">BIG RAFFLE</span> — <span className="text-yellow-300 font-extrabold">Over 1 BTC in prizes! More than 150k USD!!</span>
-        </h2>
-
-        {/* 3 DOTs pequeños centrados (usando BOTTOM_DOT_IDS para evitar repeticiones) */}
-        <div className="flex justify-center gap-4 mt-12 mb-2" aria-hidden>
-          {BOTTOM_DOT_IDS.map((i) => (
-            <DotImage key={`bot-${i}`} src={`/dots/${i}.png`} targetWidth={64} />
-          ))}
-        </div>
-
-        <p className="mt-12 text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
-          With <strong>DOTS</strong> you won’t just mint the largest NFT collection in history (~1,100,000 unique PFPs); you’ll also be automatically entered into multiple raffles with incredible prizes — BTCs, high-value Ordinals and surprises.
-        </p>
-
-        <ul className="mt-12 text-left max-w-3xl mx-auto space-y-3 text-base md:text-lg">
-          <li><strong>20% of the mint:</strong> we’ll raffle <strong>100 prizes of 0.0025 BTC</strong> each.</li>
-          <li><strong>50% of the mint:</strong> we’ll raffle <strong>5 prizes of 0.05 BTC</strong> each, plus several top-tier Ordinals.</li>
-          <li><strong>100% completion:</strong> the final raffle for <strong>0.5 BTC</strong>, plus additional 0.05 BTC prizes and major Ordinals.</li>
-        </ul>
-
-        <p className="mt-12 font-extrabold text-white/100 text-lg md:text-xl">OVER <span className="uppercase">$300,000</span> IN PRIZES! Don’t miss your DOT — join the largest NFT collection in history.</p>
-
-        <p className="mt-3 text-xs text-white/60">
-          See <a href="/terms" className="underline">Raffles Terms</a> for full details.
-        </p>
-      </div>
-    </section>
-  );
-}
-
 /* ========================= CTA & Footer ========================= */
 function CTASection({ lang }) {
   return (
@@ -533,11 +434,21 @@ function CTASection({ lang }) {
         </h3>
         <p className="text-white/80 mt-3 text-lg md:text-2xl">
           {lang === "es"
-            ? "Seguiremos publicando avances. Anunciaremos la fecha de mint público pronto."
-            : "We’ll keep sharing progress. Public mint date announced soon."}
+            ? "El mint está activo. Obtén un DOT aleatorio por 1 USD en Robinhood Chain."
+            : "The mint is live. Get a random DOT for $1 on Robinhood Chain."}
         </p>
 
         <div className="mt-5 flex flex-wrap justify-center gap-3">
+          <a
+            href={MINT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-2xl px-5 py-3 bg-white text-black font-semibold hover:bg-white/90"
+            aria-label="Mint DOTS on OpenSea"
+          >
+            Mint DOTS
+          </a>
+
           <a
             href="https://x.com/justdots_art"
             target="_blank"
@@ -575,7 +486,7 @@ function CTASection({ lang }) {
 function Footer() {
   return (
     <footer className="border-t border-white/10 text-center text-xs text-white/60 py-8">
-      <div className="max-w-6xl mx-auto px-4">© {new Date().getFullYear()} DOTS — Built on Bitcoin. All rights reserved.</div>
+      <div className="max-w-6xl mx-auto px-4">© {new Date().getFullYear()} DOTS — Built on Robinhood Chain. All rights reserved.</div>
     </footer>
   );
 }
