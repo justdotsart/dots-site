@@ -37,7 +37,7 @@ export const metadata = {
       "1,100,000 PFPs. Born on Bitcoin. Moving endlessly across its node network.",
     images: [
       {
-        url: "/og.png",
+        url: "/og-v2.png",
         width: 1200,
         height: 630,
         alt: "DOTS — 1,100,000 PFPs on Bitcoin",
@@ -52,7 +52,7 @@ export const metadata = {
       "1,100,000 PFPs. Born on Bitcoin. Moving endlessly across its node network.",
     site: TWITTER_USER,
     creator: TWITTER_USER,
-    images: ["/og.png"],
+    images: ["/og-v2.png"],
   },
   icons: {
     icon: [
