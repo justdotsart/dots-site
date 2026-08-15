@@ -235,16 +235,16 @@ function Hero({ lang }) {
       <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
         {lang === "es" ? (
           <>
-            1,1 MILLONES DE DOTS.{" "}
+            1,1 millon DE DOTS.{" "}
             <span className="text-[#CBFF00]">
-              UNA CADENA POR INVADIR.
+              Una blockchain por invadir.
             </span>
           </>
         ) : (
           <>
-            1.1 MILLION DOTS.{" "}
+            1.1 million DOTS.{" "}
             <span className="text-[#CBFF00]">
-              ONE CHAIN TO INVADE.
+              One chain to invade.
             </span>
           </>
         )}
@@ -254,14 +254,14 @@ function Hero({ lang }) {
         {lang === "es" ? (
           <>
             <strong>
-              Tan pequeños que puedes ignorarlos. Demasiados para detenerlos.
+              Pequeños para ignorarlos. Demasiados para detenerlos.
             </strong>
 
             <br />
 
-            1.100.000 personajes generativos. Mint aleatorio. Solo 1 USD en{" "}
+            1.100.000 de DOTS. Mint aleatorio. Solo 1 USD en{" "}
             <strong className="text-[#CBFF00]">
-              Robinhood Chain
+              RH Blockchain
             </strong>
             .
           </>
@@ -273,9 +273,9 @@ function Hero({ lang }) {
 
             <br />
 
-            1,100,000 generative characters. Random mint. Just $1 on{" "}
+            1,100,000 DOTS. Random mint. Just $1 on{" "}
             <strong className="text-[#CBFF00]">
-              Robinhood Chain
+              RH Blockchain
             </strong>
             .
           </>
